@@ -1,43 +1,42 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import axiosInstance from "./axiosInstance"; // Use your custom Axios instance
+import axiosInstance from "./axiosInstance.js";
+import { getGoogleAuthUrl } from "../utils/GoogleAuth.jsx";
 
-function Signup() {
+
+export default function Signup() {
     const [userName, setUserName] = useState("");
-    const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const navigate = useNavigate();
+    const googleAuthUrl = getGoogleAuthUrl();
 
     const handleSignup = async () => {
-        const data = {
-            userName,
-            email,
-            password,
-        };
-
         try {
             const res = await toast.promise(
-                axiosInstance.post("/signup", data),
+                axiosInstance.post("/signup", { userName, email, password }),
                 {
                     loading: "Signing up...",
                     success: "Successfully signed up!",
                     error: "Signup failed. Try again.",
                 }
             );
+
             if (res.data.accessToken) {
                 localStorage.setItem("accessToken", res.data.accessToken);
+                navigate("/todo");
             }
-            console.log("Signup response:", res.data);
         } catch (err) {
             console.error("Signup error:", err);
+            toast.error("Could not sign up.");
         }
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center">
-            <div className="rounded-2xl shadow-md p-9 w-full  bg-gray-800">
-                <h1 className="text-3xl font-bold text-center mb-6 ">
-                    Sign Up
-                </h1>
+            <div className="p-8 rounded-2xl shadow-md w-full max-w-md bg-gray-800">
+                <h1 className="text-3xl font-bold text-center mb-6">Sign Up</h1>
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -47,8 +46,6 @@ function Signup() {
                 >
                     <input
                         type="text"
-                        name="username"
-                        id="username"
                         placeholder="Username"
                         value={userName}
                         onChange={(e) => setUserName(e.target.value)}
@@ -57,8 +54,6 @@ function Signup() {
                     />
                     <input
                         type="email"
-                        name="email"
-                        id="email"
                         placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -67,8 +62,6 @@ function Signup() {
                     />
                     <input
                         type="password"
-                        name="password"
-                        id="password"
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -82,9 +75,19 @@ function Signup() {
                         Sign Up
                     </button>
                 </form>
+                <div className="mt-4 text-center">
+                    <p className="mb-2 text-gray-300">Or</p>
+                    <button
+                        onClick={() => {
+                            window.location.href = googleAuthUrl;
+                        }}
+                        className="px-4 py-2 bg-red-500 text-white rounded"
+                    >
+                        Sign up with Google
+                    </button>
+                </div>
             </div>
         </div>
     );
 }
-
-export default Signup;
+  

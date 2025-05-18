@@ -8,6 +8,8 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 
+import authGoogle from "./router/authGoogle.js";
+
 const app = express();
 
 app.use(express.json());
@@ -27,9 +29,13 @@ app.use(
 
 app.use(cookieParser());
 
+app.use("/auth", authGoogle);
+
 const verifyAccessToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
+
+    console.log(token);
 
     if (!token) {
         return res.status(401).json({
@@ -48,6 +54,13 @@ const verifyAccessToken = (req, res, next) => {
         next();
     });
 };
+
+app.get("/api/me", verifyAccessToken, (req, res) => {
+    console.log(req.user);
+    res.json({
+        user: { id: req.user.id, name: req.user.name, email: req.user.email },
+    });
+});
 
 app.post("/login", async (req, res) => {
     try {
@@ -191,7 +204,6 @@ app.post("/refresh", async (req, res) => {
             });
         }
         console.log("reached here");
-        
 
         const payload = jwt.verify(
             refreshToken,

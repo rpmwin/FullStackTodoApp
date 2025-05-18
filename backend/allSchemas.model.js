@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
     {
-        name: {
+        googleId: {
             type: String,
-            required: true,
+            // required: true,
             unique: true,
         },
         email: {
@@ -12,17 +12,22 @@ const userSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
-        password: {
+        name: {
             type: String,
-            required: true,
+        },
+        avatar: {
+            type: String,
         },
         refreshToken: {
             type: String,
-            required: true,
+        },
+        password: {
+            type: String,
+            // only required for users signing up with email+password
         },
     },
     {
-        timestamps: true, // ← adds `createdAt` and `updatedAt`
+        timestamps: true, // adds createdAt & updatedAt
     }
 );
 
@@ -36,9 +41,7 @@ const todoSchema = new mongoose.Schema(
         },
         status: {
             type: Boolean,
-            // required: true,
             default: false,
-            // enum: ['completed','pending']
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -47,7 +50,7 @@ const todoSchema = new mongoose.Schema(
         },
     },
     {
-        timestamps: true, // ← adds `createdAt` and `updatedAt`
+        timestamps: true,
     }
 );
 

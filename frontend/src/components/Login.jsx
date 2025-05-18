@@ -2,33 +2,19 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axiosInstance from "./axiosInstance";
+import { getGoogleAuthUrl } from "../utils/GoogleAuth";
 
-function Login() {
+
+export default function Login() {
     const [userName, setUserName] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
-
-    const googleAuthUrl =
-        `https://accounts.google.com/o/oauth2/v2/auth?` +
-        new URLSearchParams({
-            client_id:
-                "417505674911-cucsknb4f8kpabe9nr63icfn5kn14on8.apps.googleusercontent.com",
-            redirect_uri: "http://localhost:5000/auth/google/callback",
-            response_type: "code",
-            scope: "openid email profile",
-            access_type: "offline",
-            prompt: "consent",
-        }).toString();
+    const googleAuthUrl = getGoogleAuthUrl();
 
     const handleLogin = async () => {
-        const data = {
-            userName,
-            password,
-        };
-
         try {
-            const response = await toast.promise(
-                axiosInstance.post("/login", data),
+            const res = await toast.promise(
+                axiosInstance.post("/login", { userName, password }),
                 {
                     loading: "Logging in...",
                     success: "Logged in successfully!",
@@ -36,26 +22,21 @@ function Login() {
                 }
             );
 
-            if (response.status === 200) {
-                if (response.data.accessToken) {
-                    localStorage.setItem(
-                        "accessToken",
-                        response.data.accessToken
-                    );
-                }
-                toast.success("Redirecting to Todo...");
-                setTimeout(() => navigate("/todo"), 1500);
+            if (res.data.accessToken) {
+                localStorage.setItem("accessToken", res.data.accessToken);
             }
-        } catch (error) {
-            console.error("Login error:", error);
+            toast.success("Redirecting to Todo...");
+            setTimeout(() => navigate("/todo"), 1500);
+        } catch (err) {
+            console.error("Login error:", err);
             toast.error("Invalid credentials or server error.");
         }
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center">
-            <div className=" p-8 rounded-2xl shadow-md w-full max-w-md bg-gray-700">
-                <h1 className="text-3xl font-bold text-center mb-6 ">Login</h1>
+            <div className="p-8 rounded-2xl shadow-md w-full max-w-md bg-gray-700">
+                <h1 className="text-3xl font-bold text-center mb-6">Login</h1>
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -65,23 +46,19 @@ function Login() {
                 >
                     <input
                         type="text"
-                        name="username"
-                        id="username"
                         placeholder="Username"
-                        required
-                        className="p-3 text-lg rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={userName}
                         onChange={(e) => setUserName(e.target.value)}
+                        className="p-3 text-lg rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
                     />
                     <input
                         type="password"
-                        name="password"
-                        id="password"
                         placeholder="Password"
-                        required
-                        className="p-3 text-lg rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        className="p-3 text-lg rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
                     />
                     <button
                         type="submit"
@@ -90,12 +67,13 @@ function Login() {
                         Log In
                     </button>
                 </form>
-
-                <div className="m-3">
+                <div className="mt-4 text-center">
+                    <p className="mb-2 text-gray-300">Or</p>
                     <button
                         onClick={() => {
                             window.location.href = googleAuthUrl;
                         }}
+                        className="px-4 py-2 bg-red-500 text-white rounded"
                     >
                         Sign in with Google
                     </button>
@@ -104,5 +82,4 @@ function Login() {
         </div>
     );
 }
-
-export default Login;
+  
